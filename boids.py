@@ -7,7 +7,8 @@ n = 50 # number of agents
 w = 10 # width of the world
 h = 10 # height of the world
 r = 2 # radius of neighborhood
-# pos = 10 * np.random.random((50,2)) # the matrix of agents positions
+pos = 10 * np.random.random((n,2)) # the matrix of agents positions
+'''
 pos = np.array([
     [1.0, 1.0],   # agent 0
     [1.5, 1.2],   # agent 1
@@ -23,16 +24,18 @@ pos = np.array([
     [3.2, 8.0],   # agent 8
     [9.8, 8.0],   # agent 9
 ])
-veloc = 1 * np.random.random((10,2)) # the matrix of agents velocities
+'''
+veloc = 1 * np.random.random((n,2)) # the matrix of agents velocities
 dt = 0.1 # time step
-alpha = .5 # separation influence factor
+alpha = .01 # separation influence factor
+beta = .05 # alignment influence factor
+gamma = .01 # cohesion influence factor
 
 #define function that take one step moving forward in time
 
 def step(pos,veloc,dt):
     pos = pos + dt * veloc
     return pos
-
 
 # the caes when agent hits the world boundary and spawn periodic
 # periodic boundary
@@ -42,20 +45,11 @@ def spawn(pos,w,h):
     pos[:,1] = pos[:,1]%h
     return pos
 
-
 def plot_boids(pos):
     fig, ax = plt.subplots()
-    ax.set(xlabel="X", ylabel="Y", xlim=(0,10), ylim=(0,10), title="Boids")
+    ax.set(xlabel="X", ylabel="Y", xlim=(0,10), ylim=(0,10), title="Boids: Agent's positions")
     ax.scatter(pos[:,0], pos[:,1], color="green")
     return fig
-
-'''
- for i in range (50):
-    fig = plot_boids(pos)
-    pos = step(pos,veloc,dt)
-    pos = spawn(pos,w,h)
-    fig.savefig(f"figure_{i+1}")
-'''
 
 # give the list of neighbors of all agents
 
@@ -133,9 +127,44 @@ def find_cohesions(pos):
             cohesions = np.array([0, 0])
 
         all_cohesions.append(cohesions)
-    return all_separations
+    return all_cohesions
 
-                        
+# implementing three rules
+# and update the velocity
 
+def update_veloc(pos,veloc):
+    all_separations = find_separations(pos)
+    all_alignments = find_alignments(pos)
+    all_cohesions = find_cohesions(pos)
+    for i in range(pos.shape[0]):
+        veloc[i] = veloc[i] + alpha * all_separations[i] + beta * (all_alignments[i]-veloc[i]) + gamma * all_cohesions[i]
+    return veloc
 
+# evolving over time
+# creating 50 step images and calculate polarization each iteration
+# polarization is a quantity that evaluate collective motion
+
+polarization = []
+for i in range (50):
+    fig = plot_boids(pos)
+    p = veloc.copy()
+    for j in range(pos.shape[0]):
+        speed = np.sqrt( p[j][0]**2 + p[j][1]**2 )
+        if speed != 0:  
+            p[j] /= speed
+    p = np.sum(p, axis=0)
+    p = (1/veloc.shape[0]) * np.sqrt( p[0]**2 + p[1]**2 )
+    polarization.append(p)
+    update_veloc(pos,veloc)
+    pos = step(pos,veloc,dt)
+    pos = spawn(pos,w,h)
+    fig.savefig(f"figure_{i+1}")
+    plt.close(fig)
+
+# plotting changes of polarization over time
+
+fig, ax = plt.subplots()
+ax.set(ylabel="Polarization", xlabel="Time", title="Polarization over time")
+ax.plot(range(len(polarization)),polarization)
+plt.show()
 
