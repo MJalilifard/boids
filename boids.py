@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #defining variables
+
 n = 50 # number of agents
 w = 10 # width of the world
 h = 10 # height of the world
@@ -26,8 +27,8 @@ veloc = 1 * np.random.random((10,2)) # the matrix of agents velocities
 dt = 0.1 # time step
 alpha = .5 # separation influence factor
 
-
 #define function that take one step moving forward in time
+
 def step(pos,veloc,dt):
     pos = pos + dt * veloc
     return pos
@@ -35,6 +36,7 @@ def step(pos,veloc,dt):
 
 # the caes when agent hits the world boundary and spawn periodic
 # periodic boundary
+
 def spawn(pos,w,h):
     pos[:,0] = pos[:,0]%w
     pos[:,1] = pos[:,1]%h
@@ -55,23 +57,25 @@ def plot_boids(pos):
     fig.savefig(f"figure_{i+1}")
 '''
 
+# give the list of neighbors of all agents
 
 def find_neighbors(pos,r,w,h):
-    all_neighbors = [] # list of neighbors of all agents
+    all_neighbors = []
     for j in range(pos.shape[0]):
         neighbors = [] # neighbors of one particular agent
         for i in range(pos.shape[0]):
-            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2) # defining distance in periodic boundary world
-            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2) # defining distance in periodic boundary world
+            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2) # defining distance for periodic boundary
+            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2) # defining distance for periodic boundary
             d = np.sqrt( (dx)**2 + (dy)**2 )
             if d < r and i != j:
                 neighbors.append(i)
         all_neighbors.append(np.array(neighbors))
     return all_neighbors
 
+# separation rule 
+# give the list of all separation vectors of agents
 
-
-def find_separations(pos): # give the list of all separation vectors of agents
+def find_separations(pos):
     neighbors = find_neighbors(pos,r,w,h)
     all_separations = []
     for j in range(pos.shape[0]):
@@ -79,13 +83,59 @@ def find_separations(pos): # give the list of all separation vectors of agents
         for i in neighbors[j]:
             dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2)
             dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2)
-            separations.append(np.array([-dx,-dy])) # separation vector of an agent from each neighbor
+            separations.append(np.array([-dx,-dy])) # vectors from the agent toward each neighbor
+
 
         if separations: # if separation was empty it returns False
-            separations = np.sum(separations,axis=0) # totall separation which is the definition of separation vector
+            separations = np.sum(separations,axis=0) # separation vector of an agent
         else:
             separations = np.array([0, 0])
 
         all_separations.append(separations)
     return all_separations
+
+# alignment rule
+# give the list of all alignments vectors of agents
+
+def find_alignments(pos):
+    neighbors = find_neighbors(pos,r,w,h)
+    all_alignments = []
+    for j in range(pos.shape[0]):
+        alignments = [] 
+        for i in neighbors[j]:
+            alignments.append(veloc[i])
+
+        if alignments:
+            alignments = (1/len(alignments)) * np.sum(alignments,axis=0)
+        else:
+            alignments = np.array([0,0])
+
+        all_alignments.append(alignments)
+    return all_alignments
+print(find_alignments(pos))
+
+# cohesion rule
+# give the list of all cohesion vectors of agents
+
+def find_cohesions(pos):
+    neighbors = find_neighbors(pos,r,w,h)
+    all_cohesions = []
+    for j in range(pos.shape[0]):
+        cohesions = [] 
+        for i in neighbors[j]:
+            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2)
+            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2)
+            cohesions.append(np.array([-dx,-dy])) # vectors from the agent toward each neighbor
+
+        if cohesions:
+            cohesions = (1/len(cohesions)) * np.sum(cohesions,axis=0) # cohesion vector of an agent
+        else:
+            cohesions = np.array([0, 0])
+
+        all_cohesions.append(cohesions)
+    return all_separations
+
+                        
+
+
 
