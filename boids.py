@@ -24,6 +24,7 @@ pos = np.array([
 ])
 veloc = 1 * np.random.random((10,2)) # the matrix of agents velocities
 dt = 0.1 # time step
+alpha = .5 # separation influence factor
 
 
 #define function that take one step moving forward in time
@@ -80,12 +81,11 @@ def find_separations(pos): # give the list of all separation vectors of agents
             dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2)
             separations.append(np.array([-dx,-dy])) # separation vector of an agent from each neighbor
 
-        if separations:
+        if separations: # if separation was empty it returns False
             separations = np.sum(separations,axis=0) # totall separation which is the definition of separation vector
         else:
             separations = np.array([0, 0])
 
         all_separations.append(separations)
     return all_separations
-
 
