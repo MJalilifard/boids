@@ -6,14 +6,14 @@ import csv
 
 #defining variables
 
-n = 50 # number of agents
-w = 10 # width of the world
-h = 10 # height of the world
-r = 2 # radius of neighborhood
+number_of_agents = 50 # number of agents
+width = 10 # width of the world
+height = 10 # height of the world
+neighborhood = 2 # radius of neighborhood
 seed = 1
 np.random.seed(seed)
-pos = 10 * np.random.random((n,2)) # the matrix of agents positions
-veloc = 1 * np.random.random((n,2)) # the matrix of agents velocities
+pos = 10 * np.random.random((number_of_agents,2)) # the matrix of agents positions
+veloc = 1 * np.random.random((number_of_agents,2)) # the matrix of agents velocities
 dt = 0.1 # time step
 time = 50 # number of iteration or time duration
 alpha = .01 # separation influence factor
@@ -31,29 +31,29 @@ def step(pos,veloc,dt):
 # the caes when agent hits the world boundary and spawn periodic
 # periodic boundary
 
-def spawn(pos,w,h):
-    pos[:,0] = pos[:,0]%w
-    pos[:,1] = pos[:,1]%h
+def spawn(pos,width,height):
+    pos[:,0] = pos[:,0]%width
+    pos[:,1] = pos[:,1]%height
     return pos
 
 def plot_boids(pos):
     fig, ax = plt.subplots()
-    ax.set(xlabel="X", ylabel="Y", xlim=(0,10), ylim=(0,10), title="Boids: Agent's positions")
+    ax.set(xlabel="X", ylabel="Y", xlim=(0,width), ylim=(0,height), title="Boids: Agent's positions")
     ax.scatter(pos[:,0], pos[:,1], color="green")
     return fig
 
 
 # give the list of neighbors of all agents
 
-def find_neighbors(pos,r,w,h):
+def find_neighbors(pos,neighborhood,width,height):
     all_neighbors = []
     for j in range(pos.shape[0]):
         neighbors = [] # neighbors of one particular agent
         for i in range(pos.shape[0]):
-            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2) # defining distance for periodic boundary
-            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2) # defining distance for periodic boundary
+            dx = ((pos[j,0]-pos[i,0]+width/2)%width)-(width/2) # defining distance for periodic boundary
+            dy = ((pos[j,1]-pos[i,1]+height/2)%height)-(height/2) # defining distance for periodic boundary
             d = np.sqrt( (dx)**2 + (dy)**2 )
-            if d < r and i != j:
+            if d < neighborhood and i != j:
                 neighbors.append(i)
         all_neighbors.append(np.array(neighbors))
     return all_neighbors
@@ -63,13 +63,13 @@ def find_neighbors(pos,r,w,h):
 # give the list of all separation vectors of agents
 
 def find_separations(pos):
-    neighbors = find_neighbors(pos,r,w,h)
+    neighbors = find_neighbors(pos,neighborhood,width,height)
     all_separations = []
     for j in range(pos.shape[0]):
         separations = [] 
         for i in neighbors[j]:
-            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2)
-            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2)
+            dx = ((pos[j,0]-pos[i,0]+width/2)%width)-(width/2)
+            dy = ((pos[j,1]-pos[i,1]+height/2)%height)-(height/2)
             separations.append(np.array([-dx,-dy])) # vectors from the agent toward each neighbor
 
 
@@ -86,7 +86,7 @@ def find_separations(pos):
 # give the list of all alignments vectors of agents
 
 def find_alignments(pos):
-    neighbors = find_neighbors(pos,r,w,h)
+    neighbors = find_neighbors(pos,neighborhood,width,height)
     all_alignments = []
     for j in range(pos.shape[0]):
         alignments = [] 
@@ -106,13 +106,13 @@ def find_alignments(pos):
 # give the list of all cohesion vectors of agents
 
 def find_cohesions(pos):
-    neighbors = find_neighbors(pos,r,w,h)
+    neighbors = find_neighbors(pos,neighborhood,width,height)
     all_cohesions = []
     for j in range(pos.shape[0]):
         cohesions = [] 
         for i in neighbors[j]:
-            dx = ((pos[j,0]-pos[i,0]+w/2)%w)-(w/2)
-            dy = ((pos[j,1]-pos[i,1]+h/2)%h)-(h/2)
+            dx = ((pos[j,0]-pos[i,0]+width/2)%width)-(width/2)
+            dy = ((pos[j,1]-pos[i,1]+height/2)%height)-(height/2)
             cohesions.append(np.array([-dx,-dy])) # vectors from the agent toward each neighbor
 
         if cohesions:
@@ -137,8 +137,9 @@ def update_veloc(pos,veloc):
 
 
 #----------------------------------SIMULATION-------------------------------------
-# crating directories for storing data and figures
-# for each run 
+# crating directories for storing data and figures for each run
+# i manually change run_*** (e.g. run_001) considering the number
+# of last run 
 
 figures_dir = Path('./results/run_001/figures')
 figures_dir.mkdir(parents=True, exist_ok=True)
@@ -167,7 +168,7 @@ for i in range (time):
     # udate veloc and then move them
     update_veloc(pos,veloc)
     pos = step(pos,veloc,dt)
-    pos = spawn(pos,w,h)
+    pos = spawn(pos,width,height)
 
 
 # storing polarization in csv file
@@ -181,8 +182,8 @@ with open(polarization_file, "w", newline="") as file:
 
 # storing parameters in txt file
 
-with open(parameters_file, "w", newline="") as file:
-    file.write(f"n = {n}\nw = {w}\nh = {h}\nr = {r}\nseed = {seed}\ndt = {dt}\ntime = {time}\nalpha = {alpha}\nbeta = {beta}\ngamma = {gamma}")
+with open(parameters_file, "w") as file:
+    file.write(f"number of agents = {number_of_agents}\nwidth of the world = {width}\nheight of the world = {height}\nneighborhood radius = {neighborhood}\nseed = {seed}\ntime step = {dt}\ntime duration = {time}\nalpha = {alpha}\nbeta = {beta}\ngamma = {gamma}")
 
 
 # plotting changes of polarization over time
