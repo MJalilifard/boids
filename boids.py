@@ -12,8 +12,8 @@ height = 10 # height of the world
 neighborhood = 2 # radius of neighborhood
 seed = 1
 np.random.seed(seed)
-pos = 10 * np.random.random((number_of_agents,2)) # the matrix of agents positions
-veloc = 1 * np.random.random((number_of_agents,2)) # the matrix of agents velocities
+pos = 10 * np.random.random((number_of_agents,2)) # the matrix of agents's positions
+veloc = 1 * np.random.random((number_of_agents,2)) # the matrix of agents's velocities
 dt = 0.1 # time step
 time = 50 # number of iteration or time duration
 alpha = .01 # separation influence factor
@@ -28,8 +28,7 @@ def step(pos,veloc,dt):
     return pos
 
 
-# the caes when agent hits the world boundary and spawn periodic
-# periodic boundary
+# handling the cases when an agent hits the world boundary and spawn periodic
 
 def spawn(pos,width,height):
     pos[:,0] = pos[:,0]%width
@@ -136,7 +135,6 @@ def update_veloc(pos,veloc):
     return veloc
 
 
-#----------------------------------SIMULATION-------------------------------------
 # crating directories for storing data and figures for each run
 # i manually change run_*** (e.g. run_001) considering the number
 # of last run 
@@ -171,7 +169,7 @@ for i in range (time):
     pos = spawn(pos,width,height)
 
 
-# storing polarization in csv file
+# storing polarization in a csv file
 
 with open(polarization_file, "w", newline="") as file:
     writer = csv.writer(file)
@@ -180,7 +178,7 @@ with open(polarization_file, "w", newline="") as file:
         writer.writerow([i,polarization[i]])
 
 
-# storing parameters in txt file
+# storing parameters in a txt file
 
 with open(parameters_file, "w") as file:
     file.write(f"number of agents = {number_of_agents}\nwidth of the world = {width}\nheight of the world = {height}\nneighborhood radius = {neighborhood}\nseed = {seed}\ntime step = {dt}\ntime duration = {time}\nalpha = {alpha}\nbeta = {beta}\ngamma = {gamma}")
