@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
+import csv
+
 
 #defining variables
 
@@ -7,35 +10,23 @@ n = 50 # number of agents
 w = 10 # width of the world
 h = 10 # height of the world
 r = 2 # radius of neighborhood
+seed = 1
+np.random.seed(seed)
 pos = 10 * np.random.random((n,2)) # the matrix of agents positions
-'''
-pos = np.array([
-    [1.0, 1.0],   # agent 0
-    [1.5, 1.2],   # agent 1
-    [1.2, 1.7],   # agent 2
-
-    [5.0, 5.0],   # agent 3
-    [5.6, 5.2],   # agent 4
-    [5.2, 5.7],   # agent 5
-
-    [8.0, 8.0],   # agent 6
-    [8.5, 8.3],   # agent 7
-
-    [3.2, 8.0],   # agent 8
-    [9.8, 8.0],   # agent 9
-])
-'''
 veloc = 1 * np.random.random((n,2)) # the matrix of agents velocities
 dt = 0.1 # time step
+time = 50 # number of iteration or time duration
 alpha = .01 # separation influence factor
 beta = .05 # alignment influence factor
 gamma = .01 # cohesion influence factor
+
 
 #define function that take one step moving forward in time
 
 def step(pos,veloc,dt):
     pos = pos + dt * veloc
     return pos
+
 
 # the caes when agent hits the world boundary and spawn periodic
 # periodic boundary
@@ -51,6 +42,7 @@ def plot_boids(pos):
     ax.scatter(pos[:,0], pos[:,1], color="green")
     return fig
 
+
 # give the list of neighbors of all agents
 
 def find_neighbors(pos,r,w,h):
@@ -65,6 +57,7 @@ def find_neighbors(pos,r,w,h):
                 neighbors.append(i)
         all_neighbors.append(np.array(neighbors))
     return all_neighbors
+
 
 # separation rule 
 # give the list of all separation vectors of agents
@@ -88,6 +81,7 @@ def find_separations(pos):
         all_separations.append(separations)
     return all_separations
 
+
 # alignment rule
 # give the list of all alignments vectors of agents
 
@@ -106,7 +100,7 @@ def find_alignments(pos):
 
         all_alignments.append(alignments)
     return all_alignments
-print(find_alignments(pos))
+
 
 # cohesion rule
 # give the list of all cohesion vectors of agents
@@ -129,6 +123,7 @@ def find_cohesions(pos):
         all_cohesions.append(cohesions)
     return all_cohesions
 
+
 # implementing three rules
 # and update the velocity
 
@@ -140,13 +135,27 @@ def update_veloc(pos,veloc):
         veloc[i] = veloc[i] + alpha * all_separations[i] + beta * (all_alignments[i]-veloc[i]) + gamma * all_cohesions[i]
     return veloc
 
-# evolving over time
-# creating 50 step images and calculate polarization each iteration
+
+#----------------------------------SIMULATION-------------------------------------
+# crating directories for storing data and figures
+# for each run 
+
+figures_dir = Path('./results/run_001/figures')
+figures_dir.mkdir(parents=True, exist_ok=True)
+run_dir = Path('./results/run_001')
+polarization_file = run_dir / "polarization.csv"
+parameters_file = run_dir / "parameters.txt"
+
+# creating images and calculate polarization of each iteration
 # polarization is a quantity that evaluate collective motion
 
-polarization = []
-for i in range (50):
+polarization = [] # for storing polarization
+for i in range (time):
+    # plot and save figures
     fig = plot_boids(pos)
+    fig.savefig(figures_dir / f"figure_{i+1}.png")
+    plt.close(fig)
+    # calcualting polarization
     p = veloc.copy()
     for j in range(pos.shape[0]):
         speed = np.sqrt( p[j][0]**2 + p[j][1]**2 )
@@ -155,16 +164,32 @@ for i in range (50):
     p = np.sum(p, axis=0)
     p = (1/veloc.shape[0]) * np.sqrt( p[0]**2 + p[1]**2 )
     polarization.append(p)
+    # udate veloc and then move them
     update_veloc(pos,veloc)
     pos = step(pos,veloc,dt)
     pos = spawn(pos,w,h)
-    fig.savefig(f"figure_{i+1}")
-    plt.close(fig)
+
+
+# storing polarization in csv file
+
+with open(polarization_file, "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["iteration","polarization"])
+    for i in range(len(polarization)):
+        writer.writerow([i,polarization[i]])
+
+
+# storing parameters in txt file
+
+with open(parameters_file, "w", newline="") as file:
+    file.write(f"n = {n}\nw = {w}\nh = {h}\nr = {r}\nseed = {seed}\ndt = {dt}\ntime = {time}\nalpha = {alpha}\nbeta = {beta}\ngamma = {gamma}")
+
 
 # plotting changes of polarization over time
 
 fig, ax = plt.subplots()
 ax.set(ylabel="Polarization", xlabel="Time", title="Polarization over time")
 ax.plot(range(len(polarization)),polarization)
-plt.show()
+fig.savefig(figures_dir / "polarization.png")
+plt.close(fig)
 
