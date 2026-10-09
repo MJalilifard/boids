@@ -9,10 +9,12 @@ import csv
 number_of_agents = 50 # number of agents
 width = 10 # width of the world
 height = 10 # height of the world
+# if you want to create a non-square world you should be aware that th posistions 
+# created by random in this interval [0,width) 
 neighborhood = 2 # radius of neighborhood
 seed = 1
 np.random.seed(seed)
-pos = 10 * np.random.random((number_of_agents,2)) # the matrix of agents's positions
+pos = width * np.random.random((number_of_agents,2)) # the matrix of agents's positions
 veloc = 1 * np.random.random((number_of_agents,2)) # the matrix of agents's velocities
 dt = 0.1 # time step
 time = 50 # number of iteration or time duration
@@ -69,7 +71,7 @@ def find_separations(pos):
         for i in neighbors[j]:
             dx = ((pos[j,0]-pos[i,0]+width/2)%width)-(width/2)
             dy = ((pos[j,1]-pos[i,1]+height/2)%height)-(height/2)
-            separations.append(np.array([-dx,-dy])) # vectors from the agent toward each neighbor
+            separations.append(np.array([dx,dy])) # vectors from the agent toward each neighbor
 
 
         if separations: # if separation was empty it returns False
