@@ -145,7 +145,7 @@ figures_dir = Path('./results/run_001/figures')
 figures_dir.mkdir(parents=True, exist_ok=True)
 run_dir = Path('./results/run_001')
 polarization_file = run_dir / "polarization.csv"
-parameters_file = run_dir / "parameters.txt"
+parameters_file = run_dir / "parameters.csv"
 
 # creating images and calculate polarization of each iteration
 # polarization is a quantity that evaluate collective motion
@@ -154,7 +154,7 @@ polarization = [] # for storing polarization
 for i in range (time):
     # plot and save figures
     fig = plot_boids(pos)
-    fig.savefig(figures_dir / f"figure_{i+1}.png")
+    fig.savefig(figures_dir / f"figure_{i:03d}.png")
     plt.close(fig)
     # calcualting polarization
     p = veloc.copy()
@@ -180,10 +180,16 @@ with open(polarization_file, "w", newline="") as file:
         writer.writerow([i,polarization[i]])
 
 
-# storing parameters in a txt file
+# storing parameters in a csv file
+
+parameters_names = ["number_of_agents", "width", "height", "neighborhood", "seed", "dt", "time", "alpha", "beta", "gamma"]
+parameters_values = [number_of_agents, width, height, neighborhood, seed, dt, time, alpha, beta, gamma]
 
 with open(parameters_file, "w") as file:
-    file.write(f"number of agents = {number_of_agents}\nwidth of the world = {width}\nheight of the world = {height}\nneighborhood radius = {neighborhood}\nseed = {seed}\ntime step = {dt}\ntime duration = {time}\nalpha = {alpha}\nbeta = {beta}\ngamma = {gamma}")
+    writer = csv.writer(file)
+    writer.writerow(["parameter","value"])
+    for i in range(len(parameters_names)):
+        writer.writerow([parameters_names[i],parameters_values[i]])
 
 
 # plotting changes of polarization over time
