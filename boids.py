@@ -5,7 +5,7 @@ import csv
 
 
 #defining variables
-
+run_number = 1
 number_of_agents = 50 # number of agents
 width = 10 # width of the world
 height = 10 # height of the world
@@ -138,12 +138,10 @@ def update_veloc(pos,veloc):
 
 
 # crating directories for storing data and figures for each run
-# i manually change run_*** (e.g. run_001) considering the number
-# of last run 
 
-figures_dir = Path('./results/run_001/figures')
+figures_dir = Path(f'./results/run_{run_number:03d}/figures')
 figures_dir.mkdir(parents=True, exist_ok=True)
-run_dir = Path('./results/run_001')
+run_dir = Path(f'./results/run_{run_number:03d}')
 polarization_file = run_dir / "polarization.csv"
 parameters_file = run_dir / "parameters.csv"
 
@@ -182,8 +180,8 @@ with open(polarization_file, "w", newline="") as file:
 
 # storing parameters in a csv file
 
-parameters_names = ["number_of_agents", "width", "height", "neighborhood", "seed", "dt", "time", "alpha", "beta", "gamma"]
-parameters_values = [number_of_agents, width, height, neighborhood, seed, dt, time, alpha, beta, gamma]
+parameters_names = ["run_number", "number_of_agents", "width", "height", "neighborhood", "seed", "dt", "time", "alpha", "beta", "gamma"]
+parameters_values = [run_number, number_of_agents, width, height, neighborhood, seed, dt, time, alpha, beta, gamma]
 
 with open(parameters_file, "w") as file:
     writer = csv.writer(file)
