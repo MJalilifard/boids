@@ -137,7 +137,7 @@ def update_veloc(pos,veloc):
     return veloc
 
 
-# crating directories for storing data and figures for each run
+# creating directories for storing data and figures for each run
 
 figures_dir = Path(f'./results/run_{run_number:03d}/figures')
 figures_dir.mkdir(parents=True, exist_ok=True)

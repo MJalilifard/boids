@@ -1,13 +1,11 @@
 from PIL import Image
 from pathlib import Path
-
-# number of run
-run = 1
+from boids import run_number
 
 # creating directories
 
-run_dir = Path(f'./results/run_{run:03d}')
-figures_dir = Path(f'./results/run_{run:03d}/figures')
+run_dir = Path(f'./results/run_{run_number:03d}')
+figures_dir = Path(f'./results/run_{run_number:03d}/figures')
 
 
 # pouring all images into a list 
@@ -32,4 +30,3 @@ frames[0].save(
     duration = 80,
     loop=0
 )
-
